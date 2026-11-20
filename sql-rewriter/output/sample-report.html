@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL 参数化改写报告</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #f6f7f9; color: #1a1d21; }
+@media (prefers-color-scheme: dark) { body { background: #14161a; color: #e6e8eb; } }
+h1 { font-size: 20px; }
+.cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+.card { background: #fff; border-radius: 10px; padding: 16px 20px; min-width: 130px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+@media (prefers-color-scheme: dark) { .card { background: #1f2329; } }
+.card .num { font-size: 28px; font-weight: 700; }
+.card .lbl { font-size: 12px; opacity: .7; }
+table { border-collapse: collapse; width: 100%; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+@media (prefers-color-scheme: dark) { table { background: #1f2329; } }
+th, td { text-align: left; padding: 8px 10px; font-size: 13px; border-bottom: 1px solid rgba(128,128,128,.2); vertical-align: top; }
+th { background: rgba(128,128,128,.12); }
+td.sql { font-family: ui-monospace, Menlo, monospace; font-size: 12px; max-width: 320px; word-break: break-all; }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: ui-monospace, monospace; }
+.badge.ok { background: #d8f5e3; color: #0a6b35; }
+.badge.skip { background: #fde2e1; color: #9b1c1c; }
+.badge.static { background: #e5e7eb; color: #4b5563; }
+.chip { display:inline-block; background: rgba(128,128,128,.18); border-radius: 6px; padding: 4px 10px; margin: 2px; font-size: 12px; font-family: monospace; }
+</style>
+</head>
+<body>
+<h1>SQL 参数化改写报告</h1>
+<div class="cards">
+  <div class="card"><div class="num">28</div><div class="lbl">SQL 执行点</div></div>
+  <div class="card"><div class="num" style="color:#0a8a44">23</div><div class="lbl">已参数化</div></div>
+  <div class="card"><div class="num">0</div><div class="lbl">纯静态</div></div>
+  <div class="card"><div class="num" style="color:#b42318">5</div><div class="lbl">需人工处理</div></div>
+</div>
+<p><span class='chip'>skip-reconstruct-failed × 1</span><span class='chip'>skip-unclassifiable-position × 1</span><span class='chip'>skip-opaque-sql-fragment × 1</span><span class='chip'>skip-stacked-statements × 1</span><span class='chip'>skip-sprintf-format × 1</span></p>
+<table>
+<thead><tr><th>位置</th><th>Sink</th><th>状态</th><th>说明</th><th>原始形态</th><th>改写形态</th></tr></thead>
+<tbody><tr class='ok'><td>audit_repository.php:15</td><td>legacy_db_execute</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (3 bound fragment(s))</td><td class='sql'>INSERT INTO audit_log (user_id, action, detail, created_at) VALUES (?value, &#039;?str&#039;, &#039;?str&#039;, datetime(&#039;now&#039;))</td><td class='sql'>INSERT INTO audit_log (user_id, action, detail, created_at) VALUES (__RWV0__, __RWV1__, __RWV2__, datetime(&#039;now&#039;))</td></tr>
+<tr class='ok'><td>audit_repository.php:23</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>SELECT id, action, detail, created_at FROM audit_log WHERE user_id = ?value AND action = &#039;?str&#039; ORDER BY id DESC</td><td class='sql'>SELECT id, action, detail, created_at FROM audit_log WHERE user_id = __RWV0__ AND action = __RWV1__ ORDER BY id DESC</td></tr>
+<tr class='ok'><td>audit_repository.php:36</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, user_id FROM audit_log WHERE action = &#039;login&#039; AND detail = &#039;?str&#039;</td><td class='sql'>SELECT id, user_id FROM audit_log WHERE action = &#039;login&#039; AND detail = __RWV0__</td></tr>
+<tr class='ok'><td>audit_repository.php:50</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT action AS g, COUNT(*) AS n FROM audit_log GROUP BY action HAVING COUNT(*) &gt;= ?value</td><td class='sql'>SELECT action AS g, COUNT(*) AS n FROM audit_log GROUP BY action HAVING COUNT(*) &gt;= __RWV0__</td></tr>
+<tr class='skip'><td>audit_repository.php:61</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-reconstruct-failed</span></td><td>SQL variable $sql is branch-merged from different SQL shapes; no single reconstructable definition</td><td class='sql'></td><td class='sql'></td></tr>
+<tr class='ok'><td>order_repository.php:17</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT COUNT(*) AS n FROM ?ident</td><td class='sql'>SELECT COUNT(*) AS n FROM __RWI0__</td></tr>
+<tr class='ok'><td>order_repository.php:26</td><td>legacy_db_execute</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (4 bound fragment(s))</td><td class='sql'>INSERT INTO orders (user_id, product, amount, status, created_at) VALUES (?value, &#039;?str&#039;, ?value, &#039;?str&#039;, datetime(&#039;now&#039;))</td><td class='sql'>INSERT INTO orders (user_id, product, amount, status, created_at) VALUES (__RWV0__, __RWV1__, __RWV2__, __RWV3__, datetime(&#039;now&#039;))</td></tr>
+<tr class='ok'><td>order_repository.php:33</td><td>legacy_db_execute</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>UPDATE orders SET status = &#039;?str&#039; WHERE id = ?value</td><td class='sql'>UPDATE orders SET status = __RWV0__ WHERE id = __RWV1__</td></tr>
+<tr class='ok'><td>order_repository.php:41</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (5 bound fragment(s))</td><td class='sql'>SELECT ?ident.?ident AS v FROM ?ident WHERE ?ident.user_id = ?value</td><td class='sql'>SELECT __RWI0__.__RWI1__ AS v FROM __RWI2__ WHERE __RWI3__.user_id = __RWV4__</td></tr>
+<tr class='ok'><td>order_repository.php:47</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>SELECT id, user_id, product, amount, status FROM orders WHERE user_id = ?value AND status = &#039;?str&#039;</td><td class='sql'>SELECT id, user_id, product, amount, status FROM orders WHERE user_id = __RWV0__ AND status = __RWV1__</td></tr>
+<tr class='ok'><td>order_repository.php:56</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, product, amount FROM orders WHERE status = &#039;?str&#039;</td><td class='sql'>SELECT id, product, amount FROM orders WHERE status = __RWV0__</td></tr>
+<tr class='ok'><td>order_repository.php:64</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, product FROM orders WHERE product LIKE &#039;?str%&#039;</td><td class='sql'>SELECT id, product FROM orders WHERE product LIKE __RWV0__</td></tr>
+<tr class='skip'><td>order_repository.php:71</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-unclassifiable-position</span></td><td>syntactic position cannot be classified: cannot classify position after &#039;amount&#039; in clause &#039;where&#039;</td><td class='sql'></td><td class='sql'></td></tr>
+<tr class='ok'><td>order_repository.php:78</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, product FROM orders ORDER BY id LIMIT ?value</td><td class='sql'>SELECT id, product FROM orders ORDER BY id LIMIT __RWV0__</td></tr>
+<tr class='ok'><td>user_repository.php:18</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email, role, status FROM users WHERE id = ?value</td><td class='sql'>SELECT id, username, email, role, status FROM users WHERE id = __RWV0__</td></tr>
+<tr class='ok'><td>user_repository.php:25</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email FROM users WHERE username LIKE &#039;%?str%&#039;</td><td class='sql'>SELECT id, username, email FROM users WHERE username LIKE __RWV0__</td></tr>
+<tr class='ok'><td>user_repository.php:33</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, password_hash, role FROM users WHERE username = &#039;?str&#039;</td><td class='sql'>SELECT id, username, password_hash, role FROM users WHERE username = __RWV0__</td></tr>
+<tr class='ok'><td>user_repository.php:46</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email, role, status, created_at FROM users ORDER BY id ?kw</td><td class='sql'>SELECT id, username, email, role, status, created_at FROM users ORDER BY id __RWE0__</td></tr>
+<tr class='ok'><td>user_repository.php:62</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (3 bound fragment(s))</td><td class='sql'>SELECT id, username, email, role FROM users WHERE 1 = 1 AND role = &#039;?str&#039; AND status = &#039;?str&#039; LIMIT ?value</td><td class='sql'>SELECT id, username, email, role FROM users WHERE 1 = 1 AND role = __RWV0__ AND status = __RWV1__ LIMIT __RWV2__</td></tr>
+<tr class='ok'><td>user_repository.php:69</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email FROM users WHERE id IN (?(...))</td><td class='sql'>SELECT id, username, email FROM users WHERE id IN (__RWL0__)</td></tr>
+<tr class='ok'><td>user_repository.php:76</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email, role FROM users WHERE email = &#039;?str&#039;</td><td class='sql'>SELECT id, username, email, role FROM users WHERE email = __RWV0__</td></tr>
+<tr class='ok'><td>user_repository.php:83</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>SELECT id, username, email FROM users WHERE role = &#039;?str&#039; AND id &gt;= ?value</td><td class='sql'>SELECT id, username, email FROM users WHERE role = __RWV0__ AND id &gt;= __RWV1__</td></tr>
+<tr class='ok'><td>user_repository.php:91</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username FROM users WHERE role = &#039;?str&#039;</td><td class='sql'>SELECT id, username FROM users WHERE role = __RWV0__</td></tr>
+<tr class='skip'><td>user_repository.php:100</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-opaque-sql-fragment</span></td><td>a whole boolean/structural SQL fragment is concatenated; its shape is not a bindable value</td><td class='sql'></td><td class='sql'></td></tr>
+<tr class='ok'><td>user_repository.php:107</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>SELECT * FROM ?ident WHERE id = ?value</td><td class='sql'>SELECT * FROM __RWI0__ WHERE id = __RWV1__</td></tr>
+<tr class='ok'><td>user_repository.php:114</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (2 bound fragment(s))</td><td class='sql'>SELECT id, ?ident AS picked FROM users WHERE id = ?value</td><td class='sql'>SELECT id, __RWI0__ AS picked FROM users WHERE id = __RWV1__</td></tr>
+<tr class='skip'><td>user_repository.php:121</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-stacked-statements</span></td><td>statement contains a semicolon followed by further SQL (stacked queries cannot be parameterized safely)</td><td class='sql'></td><td class='sql'></td></tr>
+<tr class='skip'><td>user_repository.php:128</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-sprintf-format</span></td><td>sprintf format string is not a literal</td><td class='sql'></td><td class='sql'></td></tr>
+</tbody>
+</table>
+</body>
+</html>

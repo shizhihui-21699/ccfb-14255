@@ -1,0 +1,19 @@
+{
+    "name": "legacy/sql-injection-rewriter",
+    "description": "Static analysis tool that rewrites concatenated SQL into parameterized queries with conservative safety guarantees",
+    "type": "project",
+    "require": {
+        "php": ">=8.2",
+        "nikic/php-parser": "^5.0",
+        "ext-pdo": "*",
+        "ext-mbstring": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "SqlRewriter\\": "src/"
+        },
+        "files": [
+            "src/Runtime/legacy_stubs.php"
+        ]
+    }
+}

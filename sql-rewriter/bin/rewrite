@@ -1,0 +1,14 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+use SqlRewriter\Cli\Application;
+
+if (PHP_SAPI !== 'cli') {
+    fwrite(STDERR, "This tool runs from the command line only.\n");
+    exit(2);
+}
+
+require __DIR__ . '/../vendor/autoload.php';
+
+exit((new Application())->run($argv));

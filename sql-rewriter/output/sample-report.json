@@ -1,0 +1,568 @@
+{
+    "summary": {
+        "total": 28,
+        "rewritten": 23,
+        "skipped": 5,
+        "static": 0,
+        "reasons": {
+            "skip-reconstruct-failed": 1,
+            "skip-unclassifiable-position": 1,
+            "skip-opaque-sql-fragment": 1,
+            "skip-stacked-statements": 1,
+            "skip-sprintf-format": 1
+        }
+    },
+    "files": {
+        "audit_repository.php": [
+            {
+                "line": 15,
+                "sink": "legacy_db_execute",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (3 bound fragment(s))",
+                "originalSqlShape": "INSERT INTO audit_log (user_id, action, detail, created_at) VALUES (?value, '?str', '?str', datetime('now'))",
+                "rewrittenSqlShape": "INSERT INTO audit_log (user_id, action, detail, created_at) VALUES (__RWV0__, __RWV1__, __RWV2__, datetime('now'))",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 23,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "SELECT id, action, detail, created_at FROM audit_log WHERE user_id = ?value AND action = '?str' ORDER BY id DESC",
+                "rewrittenSqlShape": "SELECT id, action, detail, created_at FROM audit_log WHERE user_id = __RWV0__ AND action = __RWV1__ ORDER BY id DESC",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 36,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, user_id FROM audit_log WHERE action = 'login' AND detail = '?str'",
+                "rewrittenSqlShape": "SELECT id, user_id FROM audit_log WHERE action = 'login' AND detail = __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 50,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT action AS g, COUNT(*) AS n FROM audit_log GROUP BY action HAVING COUNT(*) >= ?value",
+                "rewrittenSqlShape": "SELECT action AS g, COUNT(*) AS n FROM audit_log GROUP BY action HAVING COUNT(*) >= __RWV0__",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 61,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-reconstruct-failed",
+                "explanation": "SQL variable $sql is branch-merged from different SQL shapes; no single reconstructable definition",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            }
+        ],
+        "legacy_db.php": [],
+        "order_repository.php": [
+            {
+                "line": 17,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT COUNT(*) AS n FROM ?ident",
+                "rewrittenSqlShape": "SELECT COUNT(*) AS n FROM __RWI0__",
+                "segments": [
+                    {
+                        "position": "identifier",
+                        "context": "dynamic table name",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    }
+                ]
+            },
+            {
+                "line": 26,
+                "sink": "legacy_db_execute",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (4 bound fragment(s))",
+                "originalSqlShape": "INSERT INTO orders (user_id, product, amount, status, created_at) VALUES (?value, '?str', ?value, '?str', datetime('now'))",
+                "rewrittenSqlShape": "INSERT INTO orders (user_id, product, amount, status, created_at) VALUES (__RWV0__, __RWV1__, __RWV2__, __RWV3__, datetime('now'))",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "value",
+                        "context": "value in INSERT tuple",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 33,
+                "sink": "legacy_db_execute",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "UPDATE orders SET status = '?str' WHERE id = ?value",
+                "rewrittenSqlShape": "UPDATE orders SET status = __RWV0__ WHERE id = __RWV1__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 41,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (5 bound fragment(s))",
+                "originalSqlShape": "SELECT ?ident.?ident AS v FROM ?ident WHERE ?ident.user_id = ?value",
+                "rewrittenSqlShape": "SELECT __RWI0__.__RWI1__ AS v FROM __RWI2__ WHERE __RWI3__.user_id = __RWV4__",
+                "segments": [
+                    {
+                        "position": "identifier",
+                        "context": "dynamic table in a qualified table.column reference",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "identifier",
+                        "context": "dynamic column in select",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "identifier",
+                        "context": "dynamic table name",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "identifier",
+                        "context": "dynamic table in a qualified table.column reference",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 47,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "SELECT id, user_id, product, amount, status FROM orders WHERE user_id = ?value AND status = '?str'",
+                "rewrittenSqlShape": "SELECT id, user_id, product, amount, status FROM orders WHERE user_id = __RWV0__ AND status = __RWV1__",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 56,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, product, amount FROM orders WHERE status = '?str'",
+                "rewrittenSqlShape": "SELECT id, product, amount FROM orders WHERE status = __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 64,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, product FROM orders WHERE product LIKE '?str%'",
+                "rewrittenSqlShape": "SELECT id, product FROM orders WHERE product LIKE __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 71,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-unclassifiable-position",
+                "explanation": "syntactic position cannot be classified: cannot classify position after 'amount' in clause 'where'",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            },
+            {
+                "line": 78,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, product FROM orders ORDER BY id LIMIT ?value",
+                "rewrittenSqlShape": "SELECT id, product FROM orders ORDER BY id LIMIT __RWV0__",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "numeric LIMIT/OFFSET position",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            }
+        ],
+        "schema.php": [],
+        "user_repository.php": [
+            {
+                "line": 18,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email, role, status FROM users WHERE id = ?value",
+                "rewrittenSqlShape": "SELECT id, username, email, role, status FROM users WHERE id = __RWV0__",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 25,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email FROM users WHERE username LIKE '%?str%'",
+                "rewrittenSqlShape": "SELECT id, username, email FROM users WHERE username LIKE __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 33,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, password_hash, role FROM users WHERE username = '?str'",
+                "rewrittenSqlShape": "SELECT id, username, password_hash, role FROM users WHERE username = __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 46,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email, role, status, created_at FROM users ORDER BY id ?kw",
+                "rewrittenSqlShape": "SELECT id, username, email, role, status, created_at FROM users ORDER BY id __RWE0__",
+                "segments": [
+                    {
+                        "position": "keyword",
+                        "context": "dynamic sort direction keyword",
+                        "decision": "check-enum",
+                        "detail": "keyword position; runtime enum check (ASC|DESC)"
+                    }
+                ]
+            },
+            {
+                "line": 62,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (3 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email, role FROM users WHERE 1 = 1 AND role = '?str' AND status = '?str' LIMIT ?value",
+                "rewrittenSqlShape": "SELECT id, username, email, role FROM users WHERE 1 = 1 AND role = __RWV0__ AND status = __RWV1__ LIMIT __RWV2__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "value",
+                        "context": "numeric LIMIT/OFFSET position",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 69,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email FROM users WHERE id IN (?(...))",
+                "rewrittenSqlShape": "SELECT id, username, email FROM users WHERE id IN (__RWL0__)",
+                "segments": [
+                    {
+                        "position": "in_list",
+                        "context": "placeholder inside IN(...) list",
+                        "decision": "bind-in-list",
+                        "detail": "IN(...) list; placeholder count generated at runtime from the array"
+                    }
+                ]
+            },
+            {
+                "line": 76,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email, role FROM users WHERE email = '?str'",
+                "rewrittenSqlShape": "SELECT id, username, email, role FROM users WHERE email = __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 83,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email FROM users WHERE role = '?str' AND id >= ?value",
+                "rewrittenSqlShape": "SELECT id, username, email FROM users WHERE role = __RWV0__ AND id >= __RWV1__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 91,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username FROM users WHERE role = '?str'",
+                "rewrittenSqlShape": "SELECT id, username FROM users WHERE role = __RWV0__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    }
+                ]
+            },
+            {
+                "line": 100,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-opaque-sql-fragment",
+                "explanation": "a whole boolean/structural SQL fragment is concatenated; its shape is not a bindable value",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            },
+            {
+                "line": 107,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "SELECT * FROM ?ident WHERE id = ?value",
+                "rewrittenSqlShape": "SELECT * FROM __RWI0__ WHERE id = __RWV1__",
+                "segments": [
+                    {
+                        "position": "identifier",
+                        "context": "dynamic table name",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 114,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (2 bound fragment(s))",
+                "originalSqlShape": "SELECT id, ?ident AS picked FROM users WHERE id = ?value",
+                "rewrittenSqlShape": "SELECT id, __RWI0__ AS picked FROM users WHERE id = __RWV1__",
+                "segments": [
+                    {
+                        "position": "identifier",
+                        "context": "dynamic projection column",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 121,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-stacked-statements",
+                "explanation": "statement contains a semicolon followed by further SQL (stacked queries cannot be parameterized safely)",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            },
+            {
+                "line": 128,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-sprintf-format",
+                "explanation": "sprintf format string is not a literal",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            }
+        ]
+    }
+}

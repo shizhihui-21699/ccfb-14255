@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SQL 参数化改写报告</title>
+<style>
+:root { color-scheme: light dark; }
+body { font-family: -apple-system, "Segoe UI", sans-serif; margin: 0; padding: 24px; background: #f6f7f9; color: #1a1d21; }
+@media (prefers-color-scheme: dark) { body { background: #14161a; color: #e6e8eb; } }
+h1 { font-size: 20px; }
+.cards { display: flex; gap: 12px; flex-wrap: wrap; margin: 16px 0; }
+.card { background: #fff; border-radius: 10px; padding: 16px 20px; min-width: 130px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+@media (prefers-color-scheme: dark) { .card { background: #1f2329; } }
+.card .num { font-size: 28px; font-weight: 700; }
+.card .lbl { font-size: 12px; opacity: .7; }
+table { border-collapse: collapse; width: 100%; background: #fff; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+@media (prefers-color-scheme: dark) { table { background: #1f2329; } }
+th, td { text-align: left; padding: 8px 10px; font-size: 13px; border-bottom: 1px solid rgba(128,128,128,.2); vertical-align: top; }
+th { background: rgba(128,128,128,.12); }
+td.sql { font-family: ui-monospace, Menlo, monospace; font-size: 12px; max-width: 320px; word-break: break-all; }
+.badge { padding: 2px 8px; border-radius: 999px; font-size: 11px; font-family: ui-monospace, monospace; }
+.badge.ok { background: #d8f5e3; color: #0a6b35; }
+.badge.skip { background: #fde2e1; color: #9b1c1c; }
+.badge.static { background: #e5e7eb; color: #4b5563; }
+.chip { display:inline-block; background: rgba(128,128,128,.18); border-radius: 6px; padding: 4px 10px; margin: 2px; font-size: 12px; font-family: monospace; }
+</style>
+</head>
+<body>
+<h1>SQL 参数化改写报告</h1>
+<div class="cards">
+  <div class="card"><div class="num">4</div><div class="lbl">SQL 执行点</div></div>
+  <div class="card"><div class="num" style="color:#0a8a44">3</div><div class="lbl">已参数化</div></div>
+  <div class="card"><div class="num">0</div><div class="lbl">纯静态</div></div>
+  <div class="card"><div class="num" style="color:#b42318">1</div><div class="lbl">需人工处理</div></div>
+</div>
+<p><span class='chip'>skip-opaque-sql-fragment × 1</span></p>
+<table>
+<thead><tr><th>位置</th><th>Sink</th><th>状态</th><th>说明</th><th>原始形态</th><th>改写形态</th></tr></thead>
+<tbody><tr class='ok'><td>smoke.php:6</td><td>legacy_db_get_row</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT id, username, email FROM users WHERE id = ?value</td><td class='sql'>SELECT id, username, email FROM users WHERE id = __RWV0__</td></tr>
+<tr class='ok'><td>smoke.php:11</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (3 bound fragment(s))</td><td class='sql'>SELECT * FROM users WHERE username LIKE &#039;%?str%&#039; ORDER BY ?ident ?kw</td><td class='sql'>SELECT * FROM users WHERE username LIKE &#039;%__RWV0__%&#039; ORDER BY __RWI1__ __RWE2__</td></tr>
+<tr class='ok'><td>smoke.php:16</td><td>legacy_db_get_all</td><td><span class='badge ok'>rewritten</span></td><td>rewritten to parameterized form (1 bound fragment(s))</td><td class='sql'>SELECT * FROM users WHERE id IN (?(...))</td><td class='sql'>SELECT * FROM users WHERE id IN (__RWL0__)</td></tr>
+<tr class='skip'><td>smoke.php:21</td><td>legacy_db_get_all</td><td><span class='badge skip'>skip-opaque-sql-fragment</span></td><td>a whole boolean/structural SQL fragment is concatenated; its shape is not a bindable value</td><td class='sql'></td><td class='sql'></td></tr>
+</tbody>
+</table>
+</body>
+</html>

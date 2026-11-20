@@ -1,0 +1,92 @@
+{
+    "summary": {
+        "total": 4,
+        "rewritten": 3,
+        "skipped": 1,
+        "static": 0,
+        "reasons": {
+            "skip-opaque-sql-fragment": 1
+        }
+    },
+    "files": {
+        "_dbg.php": [],
+        "_dbg2.php": [],
+        "_dbg3.php": [],
+        "_dbg4.php": [],
+        "smoke.php": [
+            {
+                "line": 6,
+                "sink": "legacy_db_get_row",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT id, username, email FROM users WHERE id = ?value",
+                "rewrittenSqlShape": "SELECT id, username, email FROM users WHERE id = __RWV0__",
+                "segments": [
+                    {
+                        "position": "value",
+                        "context": "",
+                        "decision": "bind-value",
+                        "detail": "value position; bound as a prepared-statement parameter"
+                    }
+                ]
+            },
+            {
+                "line": 11,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (3 bound fragment(s))",
+                "originalSqlShape": "SELECT * FROM users WHERE username LIKE '%?str%' ORDER BY ?ident ?kw",
+                "rewrittenSqlShape": "SELECT * FROM users WHERE username LIKE '%__RWV0__%' ORDER BY __RWI1__ __RWE2__",
+                "segments": [
+                    {
+                        "position": "string_literal",
+                        "context": "dynamic value embedded inside a quoted string literal",
+                        "decision": "bind-value",
+                        "detail": "value embedded in a quoted literal; bind and reattach surrounding text"
+                    },
+                    {
+                        "position": "identifier",
+                        "context": "dynamic column in order_by",
+                        "decision": "check-identifier",
+                        "detail": "identifier position; runtime whitelist check against schema + static literal guard"
+                    },
+                    {
+                        "position": "keyword",
+                        "context": "dynamic sort direction keyword following a dynamic column",
+                        "decision": "check-enum",
+                        "detail": "keyword position; runtime enum check (ASC|DESC)"
+                    }
+                ]
+            },
+            {
+                "line": 16,
+                "sink": "legacy_db_get_all",
+                "status": "rewritten",
+                "reasonCode": "rewritten",
+                "explanation": "rewritten to parameterized form (1 bound fragment(s))",
+                "originalSqlShape": "SELECT * FROM users WHERE id IN (?(...))",
+                "rewrittenSqlShape": "SELECT * FROM users WHERE id IN (__RWL0__)",
+                "segments": [
+                    {
+                        "position": "in_list",
+                        "context": "placeholder inside IN(...) list",
+                        "decision": "bind-in-list",
+                        "detail": "IN(...) list; placeholder count generated at runtime from the array"
+                    }
+                ]
+            },
+            {
+                "line": 21,
+                "sink": "legacy_db_get_all",
+                "status": "skipped",
+                "reasonCode": "skip-opaque-sql-fragment",
+                "explanation": "a whole boolean/structural SQL fragment is concatenated; its shape is not a bindable value",
+                "originalSqlShape": null,
+                "rewrittenSqlShape": null,
+                "segments": []
+            }
+        ]
+    }
+}

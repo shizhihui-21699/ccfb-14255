@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+# Runs every test layer: unit components, the rewriter, and the
+# equivalence/injection harness. Exits non-zero on the first failure.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+echo "== component unit tests =="
+php tests/SqlStructureTest.php
+php tests/TaintTrackerTest.php
+
+echo
+echo "== re-generating rewritten sample app =="
+# Exit 3 means "completed, but some sinks need manual review" — expected here.
+php bin/rewrite run sample-app/original \
+    --out sample-app/rewritten \
+    --report output/sample-report || code=$?
+code=${code:-0}
+if [ "$code" != "0" ] && [ "$code" != "3" ]; then
+    echo "rewriter failed with exit code $code" >&2
+    exit "$code"
+fi
+unset code
+
+echo
+echo "== equivalence + injection harness =="
+php tests/harness/run.php
+
+echo
+echo "All test layers passed."

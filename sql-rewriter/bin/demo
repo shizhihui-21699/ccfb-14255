@@ -1,0 +1,95 @@
+#!/usr/bin/env php
+<?php
+declare(strict_types=1);
+
+/**
+ * End-to-end demonstration.
+ *
+ * Shows the SAME injection payload against:
+ *   1. the original concatenated query  -> injection succeeds (vulnerable)
+ *   2. the rewritten parameterized query -> payload is inert / blocked
+ * on freshly seeded, identical databases.
+ */
+
+require __DIR__ . '/../vendor/autoload.php';
+
+use SqlRewriter\Config;
+use SqlRewriter\Runtime\SafeDb;
+use SqlRewriter\Runtime\SqlGuard;
+use SqlRewriter\Runtime\UnsafeIdentifierException;
+
+$base = dirname(__DIR__);
+require $base . '/sample-app/original/schema.php';
+
+$origDb = $base . '/output/demo_original.sqlite';
+$rewDb = $base . '/output/demo_rewritten.sqlite';
+sample_init_database($origDb);
+sample_init_database($rewDb);
+
+$line = str_repeat('-', 72);
+
+echo $line, "\n";
+echo "DEMO 1 — value injection via u2_search_by_name (LIKE)\n";
+echo $line, "\n";
+$payload = "%' UNION SELECT id, username, password_hash FROM users--";
+echo "payload: {$payload}\n\n";
+
+// original, in an isolated process (it declares its own legacy functions)
+$origOut = run_isolated($base . '/tests/harness/child_original.php', 'u2_search_by_name', [$payload]);
+echo "ORIGINAL concatenated query returned ", count($origOut['result'] ?? []), " rows:\n";
+foreach (array_slice($origOut['result'] ?? [], 0, 3) as $row) {
+    echo "   ", json_encode($row, JSON_UNESCAPED_UNICODE), "\n";
+}
+echo "   -> UNION injected password_hash into the email column: ",
+    (isset($origOut['result'][0]['email']) && str_starts_with((string) $origOut['result'][0]['email'], 'hash')
+        ? "YES (injection succeeded, hashes leaked)" : "no"), "\n\n";
+
+$rewOut = run_isolated($base . '/tests/harness/child_rewritten.php', 'u2_search_by_name', [$payload]);
+echo "REWRITTEN parameterized query returned ", count($rewOut['result'] ?? []), " rows";
+if ($rewOut['error'] !== null) {
+    echo " (error: {$rewOut['error']})";
+}
+echo "\n   -> payload treated as an inert LIKE value, no UNION, no schema leak\n";
+
+echo "\n", $line, "\n";
+echo "DEMO 2 — identifier injection via u11_dynamic_table\n";
+echo $line, "\n";
+$evilTable = 'users; DROP TABLE orders';
+echo "payload table name: {$evilTable}\n";
+
+// configure rewritten runtime in-process for the guard demo
+$pdo = new PDO('sqlite:' . $rewDb);
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+$config = Config::default();
+SafeDb::configure($pdo, new SqlGuard($config->schema, $config->enums));
+require $base . '/sample-app/rewritten/user_repository.php';
+
+try {
+    u11_dynamic_table($evilTable, 1);
+    echo "REWRITTEN: query ran (UNEXPECTED)\n";
+} catch (UnsafeIdentifierException $e) {
+    echo "REWRITTEN: guard blocked it -> ", $e->getMessage(), "\n";
+}
+$ordersStillThere = (int) $pdo->query("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='orders'")->fetchColumn() === 1;
+echo "orders table intact: ", $ordersStillThere ? 'YES' : 'NO', "\n";
+
+echo "\n", $line, "\n";
+echo "DEMO 3 — normal behavior is preserved\n";
+echo $line, "\n";
+$normal = 'user';
+$a = run_isolated($base . '/tests/harness/child_original.php', 'u2_search_by_name', [$normal]);
+$b = run_isolated($base . '/tests/harness/child_rewritten.php', 'u2_search_by_name', [$normal]);
+echo "search '{$normal}': original=", count($a['result'] ?? []), " rows, rewritten=", count($b['result'] ?? []), " rows\n";
+echo "byte-identical result sets: ", ($a === $b ? 'YES' : 'NO'), "\n";
+
+function run_isolated(string $script, string $fn, array $args): array
+{
+    $cmd = sprintf(
+        '%s %s %s %s 2>&1',
+        escapeshellarg(PHP_BINARY),
+        escapeshellarg($script),
+        escapeshellarg($fn),
+        escapeshellarg(base64_encode(serialize($args))),
+    );
+    return json_decode((string) shell_exec($cmd), true) ?: ['result' => null, 'error' => 'child failed'];
+}
